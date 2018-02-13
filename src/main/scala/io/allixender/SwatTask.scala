@@ -3,6 +3,7 @@ package io.allixender
 // In order to evaluate tasks, we'll need a Scheduler
 import java.io.File
 import java.nio.file.Files
+import java.time.LocalDateTime
 
 import monix.execution.Scheduler
 
@@ -46,7 +47,7 @@ class SwatTask {
     // Creating a special scheduler meant for I/O
     lazy val ioScheduler = Scheduler.io(name = "my-io")
 
-    val task = Task {
+    val task = Task.evalOnce {
 
       val workDir = if (runFolder.isDefined) {
         val folder = new File(runFolder.get)
@@ -67,7 +68,8 @@ class SwatTask {
           val files = workDir.listFiles.toList
             .map(file => file.getPath).mkString(",\n")
 
-          files + ",\n" + processOutput
+          // files + ",\n" + processOutput
+          java.time.LocalDateTime.now().toString + ",\n" + processOutput
 
         } catch {
           case e: RuntimeException => s"RuntimeException ${e.getMessage}" + s"${e.getStackTrace.mkString("\n - ")}"
@@ -78,7 +80,7 @@ class SwatTask {
         s"SWAT not executable"
       }
 
-      println(s"Ends on thread: ${Thread.currentThread.getName} ${SWAT.toExternalForm}")
+      println(s"runSwat task_def on thread: ${Thread.currentThread.getName} ${SWAT.toExternalForm}")
 
       output
     }
@@ -86,13 +88,13 @@ class SwatTask {
     // Or you can convert it into a Future
     val future: CancelableFuture[String] = {
       val forked = Task.fork(task, ioScheduler)
-      println("as future")
+      println(s"CancelableFuture composed on thread: ${Thread.currentThread.getName}")
       forked.runAsync
 
     }
 
     // Printing the result asynchronously
-    future.foreach(println)
+    // future.foreach(println)
 
     future
   }

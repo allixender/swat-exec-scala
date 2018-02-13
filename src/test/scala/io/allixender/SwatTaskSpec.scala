@@ -24,8 +24,10 @@ class SwatTaskSpec extends WordSpec with MustMatchers {
 
       val out = swat.runSwat(Some(testcaseFolder.getPath))
       println(s"run test case on thread: ${Thread.currentThread.getName}")
-      out.map {
-        _ must (include("Soil & Water Assessment Tool") and include("Execution successfully completed"))
+
+      out.map { s =>
+        println(s)
+        s must (include("Soil & Water Assessment Tool") and include("Execution successfully completed"))
       }
     }
   }
